@@ -1,0 +1,9 @@
+include:
+  - caddy/docker-compose.yaml
+
+services:
+  node-manager:
+    image: ghcr.io/atominfra/node-manager:main
+    restart: always
+    ports:
+      - 8000:8000

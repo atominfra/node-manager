@@ -9,6 +9,7 @@ import requests
 app = FastAPI()
 
 CADDY_ADMIN_URL = "http://localhost:2019"
+DOCKER_NETWORK =  "atominfra"
 
 
 client = docker.from_env() 
@@ -33,7 +34,7 @@ class MapDomainRequest(BaseModel):
 
 # write a function that takes image url, registry credentials (use them to pull private image), container name, memory limit, cpu limit, environment variables and starts a container and returns the container id
 @app.post("/")
-def start_container(request: CreateServiceRequest):
+def create_container(request: CreateServiceRequest):
     try:
         if request.registry_credentials:
             client.login(username=request.registry_credentials.username, password=request.registry_credentials.password)
@@ -45,7 +46,8 @@ def start_container(request: CreateServiceRequest):
             mem_limit=request.memory_limit,
             environment=request.environment_variables,
             cpu_period=100000,
-            cpu_quota=int(request.cpu_limit * 100000)
+            cpu_quota=int(request.cpu_limit * 100000),
+            network=DOCKER_NETWORK
         )
         # all the details, also send mem_limit, cpu_limit and environment variables
         return {
@@ -54,7 +56,7 @@ def start_container(request: CreateServiceRequest):
             "image": container.attrs["Config"]["Image"],
             "memory_limit": container.attrs["HostConfig"]["Memory"],
             "cpu_limit": container.attrs["HostConfig"]["CpuCount"],
-            "environment_variables": container.attrs["Config"]["Env"]
+            "environment_variables": container.attrs["Config"]["Env"],
         }
     except APIError as e:
         if e.response.status_code == 409:  # Conflict error

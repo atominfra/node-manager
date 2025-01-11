@@ -7,6 +7,8 @@ services:
     image: caddy:2.8
     restart: always
     command: caddy run --config /etc/caddy/config.json --resume
+    networks:
+      - atominfra
     cap_add:
       - NET_ADMIN
     environment: 
@@ -19,3 +21,7 @@ services:
       - data:/data
       - config:/config
       - ./config.json:/etc/caddy/config.json
+
+networks:
+  atominfra:
+    external: true

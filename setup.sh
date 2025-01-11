@@ -18,20 +18,25 @@ echo \
 sudo apt-get -qq update
 
 sudo apt-get -qq install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo usermod -aG docker $USER
+sudo usermod -aG docker ubuntu
 
 echo "Docker installation complete"
 
 echo "Create a new docker network"
-docker network create --driver atominfra
+if ! sudo docker network inspect atominfra > /dev/null 2>&1; then
+    sudo docker network create --driver bridge atominfra
+fi
+
 
 echo "Setting up caddy and node-manager"
 
 # Clone the Repository containing docker compose to start caddy and node manager
-git clone https://github.com/atominfra/node-manager.git
+if [ ! -d "node-manager" ]; then
+    git clone https://github.com/atominfra/node-manager.git
+fi
 
 # Change directory to the cloned repository
 cd node-manager
 
 # Start the caddy server and node manager
-sudo docker-compose up -d
+sudo docker compose up -d

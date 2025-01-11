@@ -9,3 +9,5 @@ services:
       - 8000:8000
     environment:
       - CADDY_ADMIN_URL=http://caddy:2019
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

@@ -5,10 +5,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from docker.errors import APIError
 import requests
+from .config import config
 
 app = FastAPI()
 
-CADDY_ADMIN_URL = "http://localhost:2019"
+CADDY_ADMIN_URL = config.get("CADDY_ADMIN_URL")
 DOCKER_NETWORK =  "atominfra"
 
 

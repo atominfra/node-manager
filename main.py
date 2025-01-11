@@ -172,7 +172,7 @@ def map_domain(request: MapDomainRequest):
                     "handler": "reverse_proxy",
                     "upstreams": [
                         {
-                            "dial": f"{request.container_id}:{request.container_port}"
+                            "dial": f"{request.container_id[:12]}:{request.container_port}"
                         }
                     ]
                 }

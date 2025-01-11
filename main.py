@@ -4,8 +4,11 @@ import docker
 from fastapi import FastAPI
 from pydantic import BaseModel
 from docker.errors import APIError
+import requests
 
 app = FastAPI()
+
+CADDY_ADMIN_URL = "http://localhost:2019"
 
 
 client = docker.from_env() 
@@ -21,6 +24,12 @@ class CreateServiceRequest(BaseModel):
     memory_limit: str = None
     cpu_limit: float = None
     environment_variables: Dict[str, str] = None
+    
+class MapDomainRequest(BaseModel):
+    id: str
+    domain: str
+    container_id: str
+    container_port: int
 
 # write a function that takes image url, registry credentials (use them to pull private image), container name, memory limit, cpu limit, environment variables and starts a container and returns the container id
 @app.post("/")
@@ -150,3 +159,54 @@ def get_containers():
         }
         for container in containers
     ]
+    
+@app.post("/domain")
+def map_domain(request: MapDomainRequest):
+    try:
+        route = {
+            "@id": request.id,
+            "handle": [
+                {
+                    "handler": "reverse_proxy",
+                    "upstreams": [
+                        {
+                            "dial": f"{request.container_id}:{request.container_port}"
+                        }
+                    ]
+                }
+            ],
+            "match": [
+                {
+                    "host": [
+                        "{request.domain}"
+                    ]
+                }
+            ]
+        }
+        
+        response = requests.put(f"{CADDY_ADMIN_URL}/config/apps/http/servers/srv0/routes/0", json=route)
+        
+        if response.status_code != 200:
+            return {"error": True, "message": response.text}
+        
+        return {"message": "Domain Mapped Successfully"}
+    except Exception as e:
+        print(e)
+        
+        return {"error": True, "message": str(e)}
+    
+@app.delete("/domain/{id}")
+def unmap_domain(id: str):
+    try:
+        response = requests.delete(f"{CADDY_ADMIN_URL}/id/{id}")
+        
+        if response.status_code != 200:
+            return {"error": True, "message": response.text}
+        
+        return {"message": "Domain Unmapped Successfully"}
+    except Exception as e:
+        print(e)
+        
+        return {"error": True, "message": str(e)}
+    
+    

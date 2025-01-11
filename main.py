@@ -55,7 +55,7 @@ def create_container(request: CreateServiceRequest):
             "name": container.name,
             "image": container.attrs["Config"]["Image"],
             "memory_limit": container.attrs["HostConfig"]["Memory"],
-            "cpu_limit": container.attrs["HostConfig"]["CpuCount"],
+            "cpu_limit": container.attrs["HostConfig"]["CpuQuota"] / container.attrs["HostConfig"]["CpuPeriod"] if container.attrs["HostConfig"]["CpuPeriod"] else 0,
             "environment_variables": container.attrs["Config"]["Env"],
         }
     except APIError as e:

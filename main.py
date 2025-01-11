@@ -180,7 +180,7 @@ def map_domain(request: MapDomainRequest):
             "match": [
                 {
                     "host": [
-                        "{request.domain}"
+                        f"{request.domain}"
                     ]
                 }
             ]

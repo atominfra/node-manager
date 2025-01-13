@@ -11,3 +11,9 @@ services:
       - CADDY_ADMIN_URL=http://caddy:2019
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - atominfra
+
+networks:
+  atominfra:
+    external: true

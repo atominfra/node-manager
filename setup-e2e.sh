@@ -25,17 +25,3 @@ echo "Create a new docker network"
 if ! sudo docker network inspect atominfra > /dev/null 2>&1; then
     sudo docker network create --driver bridge atominfra
 fi
-
-
-echo "Setting up caddy and node-manager"
-
-# Clone the Repository containing docker compose to start caddy and node manager
-if [ ! -d "node-manager" ]; then
-    git clone https://github.com/atominfra/node-manager.git
-fi
-
-# Change directory to the cloned repository
-cd node-manager
-
-# Start the caddy server and node manager
-sudo docker compose up -d

@@ -51,7 +51,7 @@ class MapDomainRequest(BaseModel):
 def create_container(request: CreateServiceRequest, x=Depends(secure)):
     try:
         if request.registry_credentials:
-            client.login(username=request.registry_credentials.username, password=request.registry_credentials.password)
+            client.login(username=request.registry_credentials.username, password=request.registry_credentials.password, registry=request.registry_credentials.registry_url)
         
         container = client.containers.run(
             image=request.image_url,

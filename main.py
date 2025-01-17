@@ -6,11 +6,23 @@ from pydantic import BaseModel
 from docker.errors import APIError
 import requests
 from .config import config
+from .auth import AuthGuard
+from fastapi import Request, HTTPException, Depends
 
 app = FastAPI()
 
 CADDY_ADMIN_URL = config.get("CADDY_ADMIN_URL")
 DOCKER_NETWORK =  "atominfra"
+
+PUBLIC_KEY = config.get("PUBLIC_KEY")
+
+auth_guard = AuthGuard(PUBLIC_KEY)
+
+async def secure(request: Request):
+    if not (request.headers.get("X-API-Signature")):
+        raise HTTPException(401)  
+    
+    return await auth_guard.authenticate(request=request)
 
 
 client = docker.from_env() 
@@ -35,7 +47,7 @@ class MapDomainRequest(BaseModel):
 
 # write a function that takes image url, registry credentials (use them to pull private image), container name, memory limit, cpu limit, environment variables and starts a container and returns the container id
 @app.post("/")
-def create_container(request: CreateServiceRequest):
+def create_container(request: CreateServiceRequest, x=Depends(secure)):
     try:
         if request.registry_credentials:
             client.login(username=request.registry_credentials.username, password=request.registry_credentials.password, registry=request.registry_credentials.registry_url)
@@ -76,7 +88,7 @@ def create_container(request: CreateServiceRequest):
     
 # write a function to stop a container by container id
 @app.get("/{container_id}/stop")
-def stop_container(container_id: str):
+def stop_container(container_id: str, x=Depends(secure)):
     try:
         container = client.containers.get(container_id)
         container.stop()
@@ -91,7 +103,7 @@ def stop_container(container_id: str):
     
 # write a function to start a container by container id
 @app.get("/{container_id}/start")
-def start_container(container_id: str):
+def start_container(container_id: str, x=Depends(secure)):
     try:
         container = client.containers.get(container_id)
         container.start()
@@ -107,7 +119,7 @@ def start_container(container_id: str):
 # write a function to delete a container by container id
 # take a force as query parameter, if force is true, stop the container if it is running and then delete it
 @app.delete("/{container_id}")
-def delete_container(container_id: str, force: bool = False):
+def delete_container(container_id: str, force: bool = False, x=Depends(secure)):
     try:
         container = client.containers.get(container_id)
         if container.status == "running":
@@ -127,7 +139,7 @@ def delete_container(container_id: str, force: bool = False):
 
 # write a function to get a container by container id
 @app.get("/{container_id}")
-def get_container(container_id: str):
+def get_container(container_id: str, x=Depends(secure)):
     try:
         container = client.containers.get(container_id)
         return {
@@ -148,7 +160,7 @@ def get_container(container_id: str):
 
 # write a function to get all the running containers with all the details, also send mem_limit (in mbs), cpu_limit and environment variables
 @app.get("/")
-def get_containers():
+def get_containers(x=Depends(secure)):   
     containers = client.containers.list()
     
     return [
@@ -164,7 +176,7 @@ def get_containers():
     ]
     
 @app.post("/domain")
-def map_domain(request: MapDomainRequest):
+def map_domain(request: MapDomainRequest, x=Depends(secure)):
     try:
         route = {
             "@id": request.id,
@@ -199,7 +211,7 @@ def map_domain(request: MapDomainRequest):
         return {"error": True, "message": str(e)}
     
 @app.delete("/domain/{id}")
-def unmap_domain(id: str):
+def unmap_domain(id: str, x=Depends(secure)):
     try:
         response = requests.delete(f"{CADDY_ADMIN_URL}/id/{id}")
         

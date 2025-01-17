@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+PUBLIC_KEY=$1
+
 echo "Installing docker"
 
 sudo apt-get -qq update
@@ -37,6 +39,9 @@ fi
 
 # Change directory to the cloned repository
 cd node-manager
+
+# Create a .env file with the public key
+echo "PUBLIC_KEY=$PUBLIC_KEY" > .env
 
 # Start the caddy server and node manager
 sudo docker compose up -d

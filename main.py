@@ -15,9 +15,8 @@ CADDY_ADMIN_URL = config.get("CADDY_ADMIN_URL")
 DOCKER_NETWORK =  "atominfra"
 
 PUBLIC_KEY = config.get("PUBLIC_KEY")
-PASSPHRASE = config.get("PASSPHRASE")
 
-auth_guard = AuthGuard(PUBLIC_KEY, PASSPHRASE)
+auth_guard = AuthGuard(PUBLIC_KEY)
 
 async def secure(request: Request):
     if not (request.headers.get("X-API-Signature")):

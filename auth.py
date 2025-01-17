@@ -6,9 +6,8 @@ from fastapi import Request, HTTPException
 import json
     
 class AuthGuard:
-    def __init__(self, public_key: str, passphrase: str):
+    def __init__(self, public_key: str):
         self.public_key = public_key
-        self.passphrase = passphrase
         
     def verify_signature(self, data, signature):
         
@@ -17,7 +16,7 @@ class AuthGuard:
                         
             data_hash = SHA256.new(data.encode("utf-8"))
                         
-            rsa_key = RSA.import_key(self.public_key, self.passphrase)
+            rsa_key = RSA.import_key(self.public_key)
             
             pkcs1_15.new(rsa_key=rsa_key).verify(data_hash, signature_bytes)
             

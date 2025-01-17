@@ -119,7 +119,7 @@ def start_container(container_id: str, x=Depends(secure)):
 # write a function to delete a container by container id
 # take a force as query parameter, if force is true, stop the container if it is running and then delete it
 @app.delete("/{container_id}")
-def delete_container(container_id: str, force: bool = False):
+def delete_container(container_id: str, force: bool = False, x=Depends(secure)):
     try:
         container = client.containers.get(container_id)
         if container.status == "running":

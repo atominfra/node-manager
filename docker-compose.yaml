@@ -3,7 +3,7 @@ include:
 
 services:
   node-manager:
-    image: ghcr.io/atominfra/node-manager:main
+    image: ghcr.io/atominfra/node-manager:${ENVIRONMENT}
     restart: always
     ports:
       - 8000:8000

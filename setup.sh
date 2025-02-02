@@ -2,6 +2,7 @@
 set -e
 
 PUBLIC_KEY=$1
+ENVIRONMENT=$2
 
 echo "Installing docker"
 
@@ -42,6 +43,8 @@ cd node-manager
 
 # Create a .env file with the public key
 echo "PUBLIC_KEY=$PUBLIC_KEY" > .env
+echo "ENVIRONMENT=$ENVIRONMENT" > .env
+
 
 # Start the caddy server and node manager
 sudo docker compose up -d

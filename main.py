@@ -244,7 +244,7 @@ def redeploy_container(container_id: str, tag: str,x=Depends(secure)):
         try:
             client.images.pull(new_image_url)
         except Exception as e:
-            return {"error": True, "message": f"Failed to pull image {new_image_url}: {str(e)}"}
+            return {"error": True, "message": f"Failed to pull image {new_image_url}"}
 
         if container.status == "running":
                 container.stop()
